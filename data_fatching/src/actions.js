@@ -29,3 +29,39 @@ export async function addTodo(formData) {
 
   redirect("/");
 }
+
+export async function findTodoById(id) {
+  // throw new Error("Ops!");
+
+  const todo = db.todo.findFirst({
+    where: { id },
+  });
+
+  return todo;
+}
+
+export default async function updateTodo(formState, formData) {
+  const id = Number(formData.get("id"));
+  const titulo = formData.get("titulo");
+  const descricao = formData.get("descricao");
+
+  if (titulo.length < 5) {
+    return {
+      errors: "O Título deve ter pelo menos 5 caracteres.",
+    };
+  } else if (descricao.length < 10) {
+    return {
+      errors: "A Descrção deve ter pelo menos 10 caracteres.",
+    };
+  }
+
+  await db.todo.update({
+    where: { id },
+    data: {
+      titulo,
+      descricao,
+    },
+  });
+
+  redirect("/");
+}
