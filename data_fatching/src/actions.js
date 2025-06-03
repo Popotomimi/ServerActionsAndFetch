@@ -1,5 +1,6 @@
 "use server";
 
+import { revalidatePath } from "next/cache";
 import { db } from "./db";
 import { redirect } from "next/navigation";
 
@@ -9,6 +10,8 @@ export async function deleteTodo(formData) {
   await db.todo.delete({
     where: { id },
   });
+
+  revalidatePath("/");
 
   redirect("/");
 }
@@ -26,6 +29,8 @@ export async function addTodo(formData) {
       status,
     },
   });
+
+  revalidatePath("/");
 
   redirect("/");
 }
@@ -62,6 +67,35 @@ export default async function updateTodo(formState, formData) {
       descricao,
     },
   });
+
+  revalidatePath("/");
+
+  redirect("/");
+}
+
+export async function toggleTodoStatus(formData) {
+  const todoId = Number(formData.get("id"));
+
+  const todo = await db.todo.findFirst({
+    where: { id: todoId },
+  });
+
+  if (!todo) {
+    throw new Error("Todo not found!");
+  }
+
+  const newStatus = todo.status === "pendente" ? "completa" : "pendente";
+
+  await db.todo.update({
+    where: {
+      id: todoId,
+    },
+    data: {
+      status: newStatus,
+    },
+  });
+
+  revalidatePath("/");
 
   redirect("/");
 }
